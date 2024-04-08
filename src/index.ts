@@ -1,227 +1,75 @@
-type Lecturer = {
-  name: string;
-  surname: string;
-  position: string;
-  company: string;
-  experience: number;
-  courses: string[];
-  contacts: { [key: string]: string };
-};
+abstract class Shape {
+  readonly name: string;
+  readonly color: string;
 
-class School {
-  private _areas: string[] = [];
-  private _lecturers: Lecturer[] = [];
-
-  get areas(): string[] {
-    return this._areas;
+  constructor(name: string, color: string) {
+    this.name = name;
+    this.color = color;
   }
 
-  get lecturers(): Lecturer[] {
-    return this._lecturers;
+  abstract calculateArea(): number;
+}
+
+class Circle extends Shape {
+  readonly radius: number;
+
+  constructor(name: string, color: string, radius: number) {
+    super(name, color);
+    this.radius = radius;
   }
 
-  addArea(area: string): void {
-    if (!this._areas.includes(area)) {
-      this._areas.push(area);
-    }
-  }
-
-  removeArea(area: string): void {
-    this._areas = this._areas.filter((a) => a !== area);
-  }
-
-  addLecturer(lecturer: Lecturer): void {
-    this._lecturers.push(lecturer);
-  }
-
-  removeLecturer(lecturerIdentifier: string): void {
-    this._lecturers = this._lecturers.filter(
-      (lecturer) =>
-        `${lecturer.name} ${lecturer.surname}` !== lecturerIdentifier
-    );
+  calculateArea(): number {
+    return Math.PI * this.radius * this.radius;
   }
 }
 
-class Area {
-  private _levels: string[] = [];
-  private _name: string;
+class Rectangle extends Shape {
+  readonly width: number;
+  readonly height: number;
 
-  constructor(name: string) {
-    this._name = name;
+  constructor(name: string, color: string, width: number, height: number) {
+    super(name, color);
+    this.width = width;
+    this.height = height;
   }
 
-  get levels(): string[] {
-    return this._levels;
+  calculateArea(): number {
+    return this.width * this.height;
   }
 
-  get name(): string {
-    return this._name;
-  }
-
-  addLevel(level: string): void {
-    if (!this._levels.includes(level)) {
-      this._levels.push(level);
-    }
-  }
-
-  removeLevel(level: string): void {
-    this._levels = this._levels.filter((l) => l !== level);
+  print(): void {
+    console.log(`Area of ${this.name} = width * height`);
   }
 }
 
-class Level {
-  private _groups: string[] = [];
-  private _name: string;
-  private _description: string;
+class Square extends Shape {
+  readonly side: number;
 
-  constructor(name: string, description: string) {
-    this._name = name;
-    this._description = description;
+  constructor(name: string, color: string, side: number) {
+    super(name, color);
+    this.side = side;
   }
 
-  get groups(): string[] {
-    return this._groups;
+  calculateArea(): number {
+    return this.side * this.side;
   }
 
-  get name(): string {
-    return this._name;
-  }
-
-  get description(): string {
-    return this._description;
-  }
-
-  addGroup(group: string): void {
-    if (!this._groups.includes(group)) {
-      this._groups.push(group);
-    }
-  }
-
-  removeGroup(group: string): void {
-    this._groups = this._groups.filter((g) => g !== group);
+  print(): void {
+    console.log(`Area of ${this.name} = side * side`);
   }
 }
 
-type Student = {
-  getPerformanceRating: () => number;
-};
+class Triangle extends Shape {
+  readonly base: number;
+  readonly height: number;
 
-class Group {
-  private _students: Student[] = [];
-  private _status: string;
-  private _area: string;
-  directionName: string;
-  levelName: string;
-
-  constructor(directionName: string, levelName: string) {
-    this.directionName = directionName;
-    this.levelName = levelName;
-    this._area = "";
-    this._status = "";
+  constructor(name: string, color: string, base: number, height: number) {
+    super(name, color);
+    this.base = base;
+    this.height = height;
   }
 
-  get students(): Student[] {
-    return this._students;
-  }
-
-  get status(): string {
-    return this._status;
-  }
-
-  get area(): string {
-    return this._area;
-  }
-
-  set status(newStatus: string) {
-    this._status = newStatus;
-  }
-
-  addStudents(student: Student): void {
-    this._students.push(student);
-  }
-
-  removeStudents(student: Student): void {
-    this._students = this._students.filter((s) => s !== student);
-  }
-
-  showPerformance(): Student[] {
-    const sortedStudents = [...this._students].sort(
-      (a, b) => b.getPerformanceRating() - a.getPerformanceRating()
-    );
-    return sortedStudents;
-  }
-}
-
-class AnotherStudent {
-  private _firstName: string;
-  private _lastName: string;
-  private _birthYear: number;
-  private _grades: { [workName: string]: number } = {};
-  private _visits: { [lesson: string]: boolean } = {};
-  private _currentWorkName: string | null = null;
-  private _currentLesson: string | null = null;
-
-  constructor(firstName: string, lastName: string, birthYear: number) {
-    this._firstName = firstName;
-    this._lastName = lastName;
-    this._birthYear = birthYear;
-  }
-
-  setCurrentWork(workName: string) {
-    this._currentWorkName = workName;
-  }
-
-  setCurrentLesson(lesson: string) {
-    this._currentLesson = lesson;
-  }
-
-  get fullName(): string {
-    return `${this._lastName} ${this._firstName}`;
-  }
-
-  set fullName(value: string) {
-    [this._lastName, this._firstName] = value.split(" ");
-  }
-
-  get age(): number {
-    return new Date().getFullYear() - this._birthYear;
-  }
-
-  set grade(mark: number) {
-    if (this._currentWorkName) {
-      this._grades[this._currentWorkName] = mark;
-      this._currentWorkName = null;
-    } else {
-      throw new Error(
-        "Work name not set. Please specify the work name before setting a grade."
-      );
-    }
-  }
-
-  set visit(present: boolean) {
-    if (this._currentLesson) {
-      this._visits[this._currentLesson] = present;
-      this._currentLesson = null;
-    } else {
-      throw new Error(
-        "Lesson not set. Please specify the lesson before setting a visit."
-      );
-    }
-  }
-  getPerformanceRating(): number {
-    const gradeValues = Object.values(this._grades);
-
-    if (gradeValues.length === 0) return 0;
-
-    const averageGrade =
-      gradeValues.reduce((sum: number, grade: number) => sum + grade, 0) /
-      gradeValues.length;
-    const presentCount = Object.values(this._visits).filter(
-      (present) => present
-    ).length;
-    const attendancePercentage =
-      (presentCount / Object.keys(this._visits).length) * 100;
-
-    return (averageGrade + attendancePercentage) / 2;
+  calculateArea(): number {
+    return (this.base * this.height) / 2;
   }
 }
