@@ -1,75 +1,92 @@
-abstract class Shape {
-  readonly name: string;
-  readonly color: string;
+// Визначте інтерфейс, який використовує сигнатуру індексу з типами об'єднання. 
+// Наприклад, тип значення для кожного ключа може бути число | рядок.
 
-  constructor(name: string, color: string) {
-    this.name = name;
-    this.color = color;
-  }
-
-  abstract calculateArea(): number;
+interface User {
+  [key: string]: string | number;
 }
 
-class Circle extends Shape {
-  readonly radius: number;
+const userInfo: User = {
+  name: "Yana",
+  surname: "Chelysheva",
+  age: 28,
+};
 
-  constructor(name: string, color: string, radius: number) {
-    super(name, color);
-    this.radius = radius;
-  }
+// Створіть інтерфейс, у якому типи значень у сигнатурі індексу є функціями. 
+// Ключами можуть бути рядки, а значеннями — функції, які приймають будь-які аргументи.
 
-  calculateArea(): number {
-    return Math.PI * this.radius * this.radius;
-  }
+interface FunctionMap {
+  [key: string]: (...args: any[]) => any;
 }
 
-class Rectangle extends Shape {
-  readonly width: number;
-  readonly height: number;
+const functions: FunctionMap = {
+  greet: (name: string) => `Hello, ${name}!`,
+  log: (message: string) => console.log(message),
+};
 
-  constructor(name: string, color: string, width: number, height: number) {
-    super(name, color);
-    this.width = width;
-    this.height = height;
-  }
+// Опишіть інтерфейс, який використовує сигнатуру індексу для опису об'єкта, 
+// подібного до масиву. Ключі повинні бути числами, а значення - певного типу.
 
-  calculateArea(): number {
-    return this.width * this.height;
-  }
-
-  print(): void {
-    console.log(`Area of ${this.name} = width * height`);
-  }
+interface LikeArray {
+  [key: number]: string;
 }
 
-class Square extends Shape {
-  readonly side: number;
-
-  constructor(name: string, color: string, side: number) {
-    super(name, color);
-    this.side = side;
-  }
-
-  calculateArea(): number {
-    return this.side * this.side;
-  }
-
-  print(): void {
-    console.log(`Area of ${this.name} = side * side`);
-  }
+const myArray: LikeArray = {
+  0: "Hello",
+  1: "World",
+  2: "and",
+  3: "TypeScript",
 }
 
-class Triangle extends Shape {
-  readonly base: number;
-  readonly height: number;
+// Створіть інтерфейс з певними властивостями та індексною сигнатурою. 
+// Наприклад, ви можете мати властивості типу name: string та індексну сигнатуру для додаткових динамічних властивостей.
 
-  constructor(name: string, color: string, base: number, height: number) {
-    super(name, color);
-    this.base = base;
-    this.height = height;
-  }
-
-  calculateArea(): number {
-    return (this.base * this.height) / 2;
-  }
+interface UserProfile {
+  name: string;
+  age?: number;
+  [key: string]: any; 
 }
+
+const user: UserProfile = {
+  name: "Yana Chelysheva",
+  age: 28,
+  email: "yanayana@example.com",
+  isAdmin: true
+};
+
+// Створіть два інтерфейси, один з індексною сигнатурою, а інший розширює перший, додаючи специфічні властивості.
+
+interface DynamicAttributes {
+  [key: string]: string; 
+}
+
+interface Person extends DynamicAttributes {
+  name: string; 
+  email: string; 
+}
+
+const personInfo: Person = {
+  name: "John Doe",
+  email: "john.doe@example.com",
+  age: "30", 
+  occupation: "Software Developer"
+};
+
+// Напишіть функцію, яка отримує об'єкт з індексною сигнатурою і перевіряє, чи відповідають значення певних ключів певним критеріям (наприклад, чи всі значення є числами).
+
+function areValuesNumbers(obj: { [key: string]: any }, keys: string[]): boolean {
+  return keys.every(key => typeof obj[key] === 'number');
+}
+
+const data = {
+  id: 123,
+  name: "Alice",
+  age: 30,
+  height: 175
+};
+
+const result = areValuesNumbers(data, ["id", "age", "height"]); 
+const result2 = areValuesNumbers(data, ["id", "name"]); 
+
+console.log(result);  // Output: true
+console.log(result2); // Output: false
+
