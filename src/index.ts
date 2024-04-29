@@ -1,92 +1,80 @@
-// Визначте інтерфейс, який використовує сигнатуру індексу з типами об'єднання. 
-// Наприклад, тип значення для кожного ключа може бути число | рядок.
+type DeepReadonly<T> = T extends Function | Date | RegExp
+  ? T
+  : T extends Array<infer U>
+  ? ReadonlyArray<DeepReadonly<U>>
+  : T extends object
+  ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
+  : T;
 
-interface User {
-  [key: string]: string | number;
-}
+type DeepRequireReadonly<T> = T extends Function | Date | RegExp
+  ? T
+  : T extends Array<infer U>
+  ? ReadonlyArray<DeepRequireReadonly<U>>
+  : T extends object
+  ? { readonly [K in keyof Required<T>]: DeepRequireReadonly<Required<T>[K]> }
+  : T;
 
-const userInfo: User = {
-  name: "Yana",
-  surname: "Chelysheva",
-  age: 28,
+type UpperCaseKeys<T> = {
+  [K in keyof T as Uppercase<string & K>]: T[K];
 };
 
-// Створіть інтерфейс, у якому типи значень у сигнатурі індексу є функціями. 
-// Ключами можуть бути рядки, а значеннями — функції, які приймають будь-які аргументи.
-
-interface FunctionMap {
-  [key: string]: (...args: any[]) => any;
-}
-
-const functions: FunctionMap = {
-  greet: (name: string) => `Hello, ${name}!`,
-  log: (message: string) => console.log(message),
+type ObjectToPropertyDescriptor<T> = {
+  [K in keyof T]: PropertyDescriptor;
 };
 
-// Опишіть інтерфейс, який використовує сигнатуру індексу для опису об'єкта, 
-// подібного до масиву. Ключі повинні бути числами, а значення - певного типу.
-
-interface LikeArray {
-  [key: number]: string;
-}
-
-const myArray: LikeArray = {
-  0: "Hello",
-  1: "World",
-  2: "and",
-  3: "TypeScript",
-}
-
-// Створіть інтерфейс з певними властивостями та індексною сигнатурою. 
-// Наприклад, ви можете мати властивості типу name: string та індексну сигнатуру для додаткових динамічних властивостей.
-
-interface UserProfile {
+// DeepReadonly
+interface Person {
   name: string;
-  age?: number;
-  [key: string]: any; 
+  age: number;
+  address: {
+    street: string;
+    city: string;
+  };
 }
 
-const user: UserProfile = {
-  name: "Yana Chelysheva",
-  age: 28,
-  email: "yanayana@example.com",
-  isAdmin: true
-};
-
-// Створіть два інтерфейси, один з індексною сигнатурою, а інший розширює перший, додаючи специфічні властивості.
-
-interface DynamicAttributes {
-  [key: string]: string; 
-}
-
-interface Person extends DynamicAttributes {
-  name: string; 
-  email: string; 
-}
-
-const personInfo: Person = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  age: "30", 
-  occupation: "Software Developer"
-};
-
-// Напишіть функцію, яка отримує об'єкт з індексною сигнатурою і перевіряє, чи відповідають значення певних ключів певним критеріям (наприклад, чи всі значення є числами).
-
-function areValuesNumbers(obj: { [key: string]: any }, keys: string[]): boolean {
-  return keys.every(key => typeof obj[key] === 'number');
-}
-
-const data = {
-  id: 123,
-  name: "Alice",
+const deepReadonlyPerson: DeepReadonly<Person> = {
+  name: "John",
   age: 30,
-  height: 175
+  address: {
+    street: "123 Main St",
+    city: "Anytown",
+  },
 };
 
-const result = areValuesNumbers(data, ["id", "age", "height"]); 
-const result2 = areValuesNumbers(data, ["id", "name"]); 
+// DeepRequireReadonly
+interface Animal {
+  species?: string;
+  legs?: number;
+}
 
-console.log(result);  // Output: true
-console.log(result2); // Output: false
+const deepRequireReadonlyAnimal: DeepRequireReadonly<Animal> = {
+  species: "Dog",
+  legs: 4,
+};
 
+// UpperCaseKeys
+const originalObject = {
+  name: "John",
+  age: 30,
+};
+
+const upperCaseKeysObject: UpperCaseKeys<typeof originalObject> = {
+  NAME: "John",
+  AGE: 30,
+};
+
+// ObjectToPropertyDescriptor
+const ordinaryObject = {
+  value: "Hello",
+};
+
+const propertyDescriptorObject: ObjectToPropertyDescriptor<
+  typeof ordinaryObject
+> = {
+  value: {
+    value: "Hello",
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  },
+};
