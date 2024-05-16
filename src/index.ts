@@ -1,80 +1,121 @@
-type DeepReadonly<T> = T extends Function | Date | RegExp
-  ? T
-  : T extends Array<infer U>
-  ? ReadonlyArray<DeepReadonly<U>>
-  : T extends object
-  ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
-  : T;
+enum NoteType {
+  Default,
+  RequiresConfirmation,
+}
 
-type DeepRequireReadonly<T> = T extends Function | Date | RegExp
-  ? T
-  : T extends Array<infer U>
-  ? ReadonlyArray<DeepRequireReadonly<U>>
-  : T extends object
-  ? { readonly [K in keyof Required<T>]: DeepRequireReadonly<Required<T>[K]> }
-  : T;
-
-type UpperCaseKeys<T> = {
-  [K in keyof T as Uppercase<string & K>]: T[K];
-};
-
-type ObjectToPropertyDescriptor<T> = {
-  [K in keyof T]: PropertyDescriptor;
-};
-
-// DeepReadonly
-interface Person {
+interface Note {
+  id: number;
   name: string;
-  age: number;
-  address: {
-    street: string;
-    city: string;
-  };
+  content: string;
+  dateCreated: Date;
+  dateEdited: Date;
+  completed: boolean;
+  type: NoteType;
 }
 
-const deepReadonlyPerson: DeepReadonly<Person> = {
-  name: "John",
-  age: 30,
-  address: {
-    street: "123 Main St",
-    city: "Anytown",
-  },
-};
+class TodoList {
+  private notes: Note[] = [];
+  private nextId: number = 1;
 
-// DeepRequireReadonly
-interface Animal {
-  species?: string;
-  legs?: number;
+  addNote(name: string, content: string, type: NoteType): void {
+    if (!name.trim() || !content.trim()) {
+      throw new Error("Note name and content cannot be empty");
+    }
+    const newNote: Note = {
+      id: this.nextId++,
+      name,
+      content,
+      dateCreated: new Date(),
+      dateEdited: new Date(),
+      completed: false,
+      type,
+    };
+    this.notes.push(newNote);
+  }
+
+  deleteNote(id: number): void {
+    this.notes = this.notes.filter((note) => note.id !== id);
+  }
+
+  editNote(id: number, newName: string, newContent: string): void {
+    if (!newName.trim() || !newContent.trim()) {
+      throw new Error("Note name and content cannot be empty");
+    }
+    const note = this.notes.find((note) => note.id === id);
+    if (note) {
+      if (note.type === NoteType.RequiresConfirmation) {
+        const confirmed = confirm(
+          "This note requires confirmation. Do you want to proceed with editing?"
+        );
+        if (!confirmed) return;
+      }
+      note.name = newName;
+      note.content = newContent;
+      note.dateEdited = new Date();
+    }
+  }
+
+  getNoteById(id: number): Note | undefined {
+    return this.notes.find((note) => note.id === id);
+  }
+
+  getAllNotes(): Note[] {
+    return this.notes;
+  }
+
+  toggleNoteCompletion(id: number): void {
+    const note = this.notes.find((note) => note.id === id);
+    if (note) {
+      note.completed = !note.completed;
+    }
+  }
+
+  getStats(): { total: number; incomplete: number } {
+    const total = this.notes.length;
+    const incomplete = this.notes.filter((note) => !note.completed).length;
+    return { total, incomplete };
+  }
+
+  searchNotes(query: string): Note[] {
+    query = query.trim().toLowerCase();
+    return this.notes.filter(
+      (note) =>
+        note.name.toLowerCase().includes(query) ||
+        note.content.toLowerCase().includes(query)
+    );
+  }
+
+  sortNotesByStatus(): Note[] {
+    return [...this.notes].sort((a, b) => {
+      if (a.completed === b.completed) {
+        return 0;
+      }
+      return a.completed ? 1 : -1;
+    });
+  }
+
+  sortNotesByDateCreated(): Note[] {
+    return [...this.notes].sort(
+      (a, b) => a.dateCreated.getTime() - b.dateCreated.getTime()
+    );
+  }
 }
 
-const deepRequireReadonlyAnimal: DeepRequireReadonly<Animal> = {
-  species: "Dog",
-  legs: 4,
-};
+const todoList = new TodoList();
 
-// UpperCaseKeys
-const originalObject = {
-  name: "John",
-  age: 30,
-};
+todoList.addNote("Shopping", "Buy groceries", NoteType.Default);
+todoList.addNote(
+  "Project",
+  "Complete TypeScript project",
+  NoteType.RequiresConfirmation
+);
 
-const upperCaseKeysObject: UpperCaseKeys<typeof originalObject> = {
-  NAME: "John",
-  AGE: 30,
-};
+todoList.toggleNoteCompletion(1);
 
-// ObjectToPropertyDescriptor
-const ordinaryObject = {
-  value: "Hello",
-};
+todoList.editNote(
+  2,
+  "Project Updated",
+  "Complete TypeScript assignment with enhancements"
+);
 
-const propertyDescriptorObject: ObjectToPropertyDescriptor<
-  typeof ordinaryObject
-> = {
-  value: {
-    value: "Hello",
-    writable: true,
-    enumerable: true,
-    configurable: true,
-  },
-};
+todoList.deleteNote(1);
